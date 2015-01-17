@@ -6,7 +6,7 @@ byte eepromAddress = 0;
 float movement = 0;
 float movementFactor = 0.012;
 
-float brightness = 120;
+float brightness = 200;
 float size = 10;
 
 float mapMin = -100;
@@ -20,6 +20,8 @@ CRGB ledsBuffer[LEDCOUNT];
 
 float r,g,b,shade;
 int program;
+
+const int countPrograms = 7;
  
 void setup()
 {
@@ -39,12 +41,15 @@ void loop()
   Plasma();
 }
 
+
+
+
 void GetProgram()
 {
   byte storedProg = EEPROM.read(eepromAddress);
   Serial.print("Program Found: "); Serial.println(storedProg); 
   
-  if(storedProg >= 6)
+  if(storedProg >= countPrograms)
   {
     EEPROM.write(eepromAddress, 0);
   }
@@ -83,6 +88,9 @@ void Plasma()
     break;
   case 6:
     AquaCentred();
+    break;
+  case 7:
+    Pink();
     break;
  }
     //SHOW THE ANIMATION FRAME
@@ -124,7 +132,7 @@ void Rainbow()
 void Green()
 {
   leds[0].r=0;
-  leds[0].g=128;
+  leds[0].g=brightness;
   leds[0].b=0;
 
 }
@@ -133,19 +141,28 @@ void Blue()
 {
   leds[0].r=0;
   leds[0].g=0;
-  leds[0].b=128;
+  leds[0].b=brightness;
 
 }
 
 void Red()
 {
-  leds[0].r=128;
+  leds[0].r=brightness;
   leds[0].g=0;
   leds[0].b=0;
 
 }
 
 
+void Pink()
+{
+  leds[0].r=brightness;
+  leds[0].g=brightness/2;
+  leds[0].b=brightness;
+
+}
+
+ 
 void RainbowMorphing()
 {
   CRGB buffer;
@@ -212,6 +229,10 @@ void RedBlue()
   movement+=movementFactor;
 }
 
+
+
+
+
 void BlueGreen()
 {
   int s = size *.7;
@@ -248,6 +269,24 @@ void RedMorphing()
 
 
 void AquaCentred()
+{
+ 
+  for(int i = 0; i<LEDCOUNT; i++)
+  {
+  shade = //SinVerticle(i,0,size)
+            //+ SinRotating(i,0,size) 
+            + SinCircleCentred(i,0, size/2)
+            ;
+   leds[i] = CHSV(mapLed(shade), 255, brightness);
+   leds[i].r = 0;
+   leds[i].g = leds[i].b;
+    
+    }
+    movement+=movementFactor/2;//bit faster5
+}
+
+
+void PinkCentred()
 {
  
   for(int i = 0; i<LEDCOUNT; i++)
@@ -319,7 +358,7 @@ void serialEvent() {
     Serial.print("DataRecieved: "); Serial.println(inByte);
     inByte -= 48;
     Serial.print("DataModified: "); Serial.println(inByte);
-     if(inByte <=6)
+     if(inByte <= countPrograms)
      {
        program = inByte;
        Serial.print("Program Set as "); Serial.println(inByte);
